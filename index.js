@@ -261,88 +261,18 @@ app.get('/patients/:id', async (req, res) => {
 });
 
 
-// /**
-//  * @swagger
-//  * /patients/{id}:
-//  *   put:
-//  *     summary: Update a patient by ID
-//  *     tags: [Patients]
-//  *     parameters:
-//  *       - in: path
-//  *         name: id
-//  *         schema:
-//  *           type: integer
-//  *         required: true
-//  *         description: Patient ID
-//  *     requestBody:
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               name:
-//  *                 type: string
-//  *                 example: Jane Doe
-//  *               contact:
-//  *                 type: string
-//  *                 example: "+9876543210"
-//  *     responses:
-//  *       200:
-//  *         description: Patient updated successfully
-//  *       400:
-//  *         description: Invalid input
-//  *       404:
-//  *         description: Patient not found
-//  *       500:
-//  *         description: Database error
-//  */
-
-// --- Update Patient ---
-// app.put('/patients/:id', async (req, res) => {
-//   try {
-//     const id = parseInt(req.params.id, 10);
-//     const { name, contact } = req.body;
-
-//     if (isNaN(id) || id <= 0) {
-//       return res.status(400).json({ message: 'Invalid PatientId' });
-//     }
-
-//     if (!name || !contact) {
-//       return res.status(400).json({ message: 'Name and contact are required' });
-//     }
-
-//     const [result] = await pool.query(
-//       'UPDATE patients SET name = ?, contact = ? WHERE id = ?',
-//       [name, contact, id]
-//     );
-
-//     if (result.affectedRows === 0) {
-//       return res.status(404).json({ message: 'Patient not found' });
-//     }
-
-//     res.json({ message: 'Patient updated successfully' });
-//   } catch (err) {
-//     console.error('DB Error:', err);
-//     res.status(500).json({ message: 'Database error', error: err.message });
-//   }
-// });
-
-
-
-
 /**
  * @swagger
  * /patients/{id}:
  *   put:
- *     summary: Update a patient
+ *     summary: Update a patient by ID
  *     tags: [Patients]
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
  *         schema:
  *           type: integer
+ *         required: true
  *         description: Patient ID
  *     requestBody:
  *       required: true
@@ -353,35 +283,37 @@ app.get('/patients/:id', async (req, res) => {
  *             properties:
  *               name:
  *                 type: string
+ *                 example: Jane Doe
  *               contact:
  *                 type: string
+ *                 example: "+9876543210"
  *     responses:
  *       200:
  *         description: Patient updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                 name:
- *                   type: string
- *                 contact:
- *                   type: string
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Patient not found
+ *       500:
+ *         description: Database error
  */
 
+//--- Update Patient ---
 app.put('/patients/:id', async (req, res) => {
-  const { id } = req.params;
-  const { name, contact } = req.body;
-
-  if (!name && !contact) {
-    return res.status(400).json({ message: 'Nothing to update' });
-  }
-
   try {
+    const id = parseInt(req.params.id, 10);
+    const { name, contact } = req.body;
+
+    if (isNaN(id) || id <= 0) {
+      return res.status(400).json({ message: 'Invalid PatientId' });
+    }
+
+    if (!name || !contact) {
+      return res.status(400).json({ message: 'Name and contact are required' });
+    }
+
     const [result] = await pool.query(
-      'UPDATE patients SET name = COALESCE(?, name), contact = COALESCE(?, contact) WHERE id = ?',
+      'UPDATE patients SET name = ?, contact = ? WHERE id = ?',
       [name, contact, id]
     );
 
@@ -389,16 +321,12 @@ app.put('/patients/:id', async (req, res) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    const [rows] = await pool.query('SELECT id, name, contact FROM patients WHERE id = ?', [id]);
-    res.json(rows[0]);
+    res.json({ message: 'Patient updated successfully' });
   } catch (err) {
-    console.error('DB error:', err);
+    console.error('DB Error:', err);
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
-
-
-
 
 
 /**
@@ -714,43 +642,98 @@ app.get('/appointments/:id', async (req, res) => {
 
 
 // --- Update Appointment ---
+// app.put('/appointments/:id', async (req, res) => {
+//   const id = parseInt(req.params.id, 10);
+//   const [rows] = await pool.query('SELECT * FROM appointments WHERE id = ?', [id]);
+//   if (rows.length === 0) return res.status(404).json({ message: 'Appointment not found' });
+//   const appt = rows[0];
+
+//   const { AppointmentDate, AppointmentTime, Reason } = req.body || {};
+//   if (AppointmentDate && !isValidDate(AppointmentDate)) {
+//     return res.status(400).json({ message: "AppointmentDate must be 'YYYY-MM-DD'" });
+//   }
+//   if (AppointmentTime && !isValidTime(AppointmentTime)) {
+//     return res.status(400).json({ message: "AppointmentTime must be 'HH:MM' (24h)" });
+//   }
+
+//   const newDate = AppointmentDate || appt.appointment_date;
+//   const newTime = AppointmentTime || appt.appointment_time;
+//   const newReason = (typeof Reason === 'string' && Reason.trim()) || appt.reason;
+
+//   if ((await isSlotTaken(appt.patient_id, newDate, newTime)) &&
+//       !(newDate === appt.appointment_date && newTime === appt.appointment_time)) {
+//     return res.status(409).json({ message: 'This time slot is already booked for this patient' });
+//   }
+
+//   await pool.query(
+//     'UPDATE appointments SET appointment_date = ?, appointment_time = ?, reason = ? WHERE id = ?',
+//     [newDate, newTime, newReason, id]
+//   );
+
+//   res.json({
+//     AppointmentId: id,
+//     PatientId: appt.patient_id,
+//     AppointmentDate: newDate,
+//     AppointmentTime: newTime,
+//     Reason: newReason,
+//     Message: 'Appointment updated successfully'
+//   });
+// });
+
+
+// --- Update Appointment ---
 app.put('/appointments/:id', async (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  const [rows] = await pool.query('SELECT * FROM appointments WHERE id = ?', [id]);
-  if (rows.length === 0) return res.status(404).json({ message: 'Appointment not found' });
-  const appt = rows[0];
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { PatientId, AppointmentDate, AppointmentTime, Reason } = req.body || {};
 
-  const { AppointmentDate, AppointmentTime, Reason } = req.body || {};
-  if (AppointmentDate && !isValidDate(AppointmentDate)) {
-    return res.status(400).json({ message: "AppointmentDate must be 'YYYY-MM-DD'" });
+    if (isNaN(id) || id <= 0) {
+      return res.status(400).json({ message: 'Invalid AppointmentId' });
+    }
+
+    if (!Number.isInteger(PatientId) || PatientId <= 0) {
+      return res.status(400).json({ message: 'Invalid PatientId' });
+    }
+    if (!isValidDate(AppointmentDate)) {
+      return res.status(400).json({ message: "AppointmentDate must be 'YYYY-MM-DD'" });
+    }
+    if (!isValidTime(AppointmentTime)) {
+      return res.status(400).json({ message: "AppointmentTime must be 'HH:MM' (24h)" });
+    }
+    if (!Reason || typeof Reason !== 'string' || !Reason.trim()) {
+      return res.status(400).json({ message: 'Reason is required' });
+    }
+
+    if (!(await ensurePatientExists(PatientId))) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+    if (await isSlotTaken(PatientId, AppointmentDate, AppointmentTime, id)) {
+      return res.status(409).json({ message: 'This time slot is already booked for this patient' });
+    }
+
+    const [result] = await pool.query(
+      'UPDATE appointments SET patient_id = ?, appointment_date = ?, appointment_time = ?, reason = ? WHERE id = ?',
+      [PatientId, AppointmentDate, AppointmentTime, Reason.trim(), id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    res.json({
+      AppointmentId: id,
+      PatientId,
+      AppointmentDate,
+      AppointmentTime,
+      Reason: Reason.trim(),
+      message: 'Appointment updated successfully'
+    });
+  } catch (err) {
+    console.error('DB Error:', err);
+    res.status(500).json({ message: 'Database error', error: err.message });
   }
-  if (AppointmentTime && !isValidTime(AppointmentTime)) {
-    return res.status(400).json({ message: "AppointmentTime must be 'HH:MM' (24h)" });
-  }
-
-  const newDate = AppointmentDate || appt.appointment_date;
-  const newTime = AppointmentTime || appt.appointment_time;
-  const newReason = (typeof Reason === 'string' && Reason.trim()) || appt.reason;
-
-  if ((await isSlotTaken(appt.patient_id, newDate, newTime)) &&
-      !(newDate === appt.appointment_date && newTime === appt.appointment_time)) {
-    return res.status(409).json({ message: 'This time slot is already booked for this patient' });
-  }
-
-  await pool.query(
-    'UPDATE appointments SET appointment_date = ?, appointment_time = ?, reason = ? WHERE id = ?',
-    [newDate, newTime, newReason, id]
-  );
-
-  res.json({
-    AppointmentId: id,
-    PatientId: appt.patient_id,
-    AppointmentDate: newDate,
-    AppointmentTime: newTime,
-    Reason: newReason,
-    Message: 'Appointment updated successfully'
-  });
 });
+
 
 
 /**
