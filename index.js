@@ -131,9 +131,11 @@ const swaggerSpec = swaggerJSDoc({
       }
     ],
   },
-  apis: [path.join(__dirname, 'index.js')], 
+  apis: [path.join(__dirname, '*.js')], // ✅ scans all JS files
 });
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/api-docs', (req, res) => res.redirect('/api-docs/'));
 
 /**
  * @swagger
