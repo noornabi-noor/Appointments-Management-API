@@ -131,7 +131,7 @@ const swaggerSpec = swaggerJSDoc({
       }
     ],
   },
-  apis: [path.join(__dirname, '*.js')], // ✅ scans all JS files
+  apis: ['./index.js'] // ✅ scans all JS files
 });
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -749,9 +749,6 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', docs: '/api-docs' });
 });
 
-app.get('/api-docs', (req, res) => {
-  res.redirect('/api-docs/');
-});
 
 if (require.main === module) {
   app.listen(PORT, () => {
