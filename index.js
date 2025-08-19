@@ -74,6 +74,21 @@ async function isSlotTaken(patientId, date, time) {
 }
 
 // --- Swagger Setup ---
+// const swaggerSpec = swaggerJSDoc({
+//   definition: {
+//     openapi: '3.0.3',
+//     info: {
+//       title: 'Appointment Management API',
+//       version: '1.0.0',
+//       description: 'Simple API to create and manage appointments for patients.'
+//     },
+//     servers: [{ url: 'http://localhost:' + PORT }],
+//   },
+//   apis: ['index.js'],
+// });
+// 
+
+
 const swaggerSpec = swaggerJSDoc({
   definition: {
     openapi: '3.0.3',
@@ -82,7 +97,11 @@ const swaggerSpec = swaggerJSDoc({
       version: '1.0.0',
       description: 'Simple API to create and manage appointments for patients.'
     },
-    servers: [{ url: 'http://localhost:' + PORT }],
+    servers: [
+      { url: process.env.NODE_ENV === 'production'
+          ? 'https://appointments-management-api.vercel.app'
+          : 'http://localhost:' + PORT }
+    ],
   },
   apis: ['index.js'],
 });
@@ -701,7 +720,19 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', docs: '/api-docs' });
 });
 
+// app.listen(PORT, () => {
+//   console.log(`\n Server running on http://localhost:${PORT}`);
+//   console.log('Swagger:       http://localhost:' + PORT + '/api-docs');
+// });
+
+
+
 app.listen(PORT, () => {
-  console.log(`\n Server running on http://localhost:${PORT}`);
-  console.log('Swagger:       http://localhost:' + PORT + '/api-docs');
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`\n Server running on https://appointments-management-api.vercel.app`);
+    console.log('Swagger:       https://appointments-management-api.vercel.app/api-docs');
+  } else {
+    console.log(`\n Server running on http://localhost:${PORT}`);
+    console.log('Swagger:       http://localhost:' + PORT + '/api-docs');
+  }
 });
