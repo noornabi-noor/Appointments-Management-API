@@ -745,26 +745,25 @@ app.delete('/appointments/:id', async (req, res) => {
 });
 
 
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', docs: '/api-docs' });
-});
+// app.get('/', (req, res) => {
+//   res.json({ status: 'ok', docs: '/api-docs' });
+// });
 
-// if (require.main === module) {
-//   app.listen(PORT, () => {
-//     if (process.env.NODE_ENV === 'production') {
-//       console.log(`\n Server running on https://appointments-management-api.vercel.app`);
-//       console.log('Swagger:       https://appointments-management-api.vercel.app/api-docs');
-//     } else {
-//       console.log(`\n Server running on http://localhost:${PORT}`);
-//       console.log('Swagger:       http://localhost:' + PORT + '/api-docs');
-//     }
-//   });
-// }
+app.get('/api-docs', (req, res) => {
+  res.redirect('/api-docs/');
+});
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    if (process.env.NODE_ENV === 'production') {
+      console.log(`\n Server running on https://appointments-management-api.vercel.app`);
+      console.log('Swagger:       https://appointments-management-api.vercel.app/api-docs');
+    } else {
+      console.log(`\n Server running on http://localhost:${PORT}`);
+      console.log('Swagger:       http://localhost:' + PORT + '/api-docs');
+    }
   });
 }
+
 
 module.exports = app;
