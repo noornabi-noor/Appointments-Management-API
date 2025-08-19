@@ -19,15 +19,51 @@ const pool = mysql.createPool({
   user: process.env.MYSQL_ADDON_USER,
   password: process.env.MYSQL_ADDON_PASSWORD,
   database: process.env.MYSQL_ADDON_DB,
-  port: process.env.MYSQL_ADDON_PORT || 3306
+  port: process.env.MYSQL_ADDON_PORT || 3306,
+  waitForConnections: true,
+  connectionLimit: 5, 
+  queueLimit: 0
 });
 
+
+
+// (async () => {
+//   try {
+//     const conn = await pool.getConnection();
+
+//     await conn.query(`
+//       CREATE TABLE IF NOT EXISTS patients (
+//         id INT AUTO_INCREMENT PRIMARY KEY,
+//         name VARCHAR(255) NOT NULL,
+//         contact VARCHAR(255)
+//       )
+//     `);
+
+//     await conn.query(`
+//       CREATE TABLE IF NOT EXISTS appointments (
+//         id INT AUTO_INCREMENT PRIMARY KEY,
+//         patient_id INT NOT NULL,
+//         appointment_date DATE NOT NULL,
+//         appointment_time TIME NOT NULL,
+//         reason TEXT,
+//         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//         FOREIGN KEY (patient_id) REFERENCES patients(id)
+//       )
+//     `);
+
+//     conn.release();
+//     console.log("Tables are ready");
+//   } catch (err) {
+//     console.error("Error creating tables:", err);
+//   }
+// })();
 
 
 (async () => {
   try {
     const conn = await pool.getConnection();
 
+    // Create tables if not exists
     await conn.query(`
       CREATE TABLE IF NOT EXISTS patients (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -48,10 +84,17 @@ const pool = mysql.createPool({
       )
     `);
 
+    // Seed a default patient if table is empty
+    const [rows] = await conn.query('SELECT COUNT(*) as count FROM patients');
+    if (rows[0].count === 0) {
+      await conn.query('INSERT INTO patients (name, contact) VALUES (?, ?)', ['John Doe', '123456789']);
+      console.log('Seed patient added');
+    }
+
     conn.release();
-    console.log("Tables are ready");
+    console.log("Tables ready and seed check complete");
   } catch (err) {
-    console.error("Error creating tables:", err);
+    console.error("DB error:", err);
   }
 })();
 
