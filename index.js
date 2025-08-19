@@ -745,9 +745,9 @@ app.delete('/appointments/:id', async (req, res) => {
 });
 
 
-// app.get('/', (req, res) => {
-//   res.json({ status: 'ok', docs: '/api-docs' });
-// });
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', docs: '/api-docs' });
+});
 
 app.get('/api-docs', (req, res) => {
   res.redirect('/api-docs/');
