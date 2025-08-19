@@ -27,38 +27,6 @@ const pool = mysql.createPool({
 
 
 
-// (async () => {
-//   try {
-//     const conn = await pool.getConnection();
-
-//     await conn.query(`
-//       CREATE TABLE IF NOT EXISTS patients (
-//         id INT AUTO_INCREMENT PRIMARY KEY,
-//         name VARCHAR(255) NOT NULL,
-//         contact VARCHAR(255)
-//       )
-//     `);
-
-//     await conn.query(`
-//       CREATE TABLE IF NOT EXISTS appointments (
-//         id INT AUTO_INCREMENT PRIMARY KEY,
-//         patient_id INT NOT NULL,
-//         appointment_date DATE NOT NULL,
-//         appointment_time TIME NOT NULL,
-//         reason TEXT,
-//         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//         FOREIGN KEY (patient_id) REFERENCES patients(id)
-//       )
-//     `);
-
-//     conn.release();
-//     console.log("Tables are ready");
-//   } catch (err) {
-//     console.error("Error creating tables:", err);
-//   }
-// })();
-
-
 (async () => {
   try {
     const conn = await pool.getConnection();
@@ -115,22 +83,6 @@ async function isSlotTaken(patientId, date, time) {
   );
   return rows.length > 0;
 }
-
-// --- Swagger Setup ---
-// const swaggerSpec = swaggerJSDoc({
-//   definition: {
-//     openapi: '3.0.3',
-//     info: {
-//       title: 'Appointment Management API',
-//       version: '1.0.0',
-//       description: 'Simple API to create and manage appointments for patients.'
-//     },
-//     servers: [{ url: 'http://localhost:' + PORT }],
-//   },
-//   apis: ['index.js'],
-// });
-// 
-
 
 const swaggerSpec = swaggerJSDoc({
   definition: {
@@ -309,18 +261,88 @@ app.get('/patients/:id', async (req, res) => {
 });
 
 
+// /**
+//  * @swagger
+//  * /patients/{id}:
+//  *   put:
+//  *     summary: Update a patient by ID
+//  *     tags: [Patients]
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         schema:
+//  *           type: integer
+//  *         required: true
+//  *         description: Patient ID
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               name:
+//  *                 type: string
+//  *                 example: Jane Doe
+//  *               contact:
+//  *                 type: string
+//  *                 example: "+9876543210"
+//  *     responses:
+//  *       200:
+//  *         description: Patient updated successfully
+//  *       400:
+//  *         description: Invalid input
+//  *       404:
+//  *         description: Patient not found
+//  *       500:
+//  *         description: Database error
+//  */
+
+// --- Update Patient ---
+// app.put('/patients/:id', async (req, res) => {
+//   try {
+//     const id = parseInt(req.params.id, 10);
+//     const { name, contact } = req.body;
+
+//     if (isNaN(id) || id <= 0) {
+//       return res.status(400).json({ message: 'Invalid PatientId' });
+//     }
+
+//     if (!name || !contact) {
+//       return res.status(400).json({ message: 'Name and contact are required' });
+//     }
+
+//     const [result] = await pool.query(
+//       'UPDATE patients SET name = ?, contact = ? WHERE id = ?',
+//       [name, contact, id]
+//     );
+
+//     if (result.affectedRows === 0) {
+//       return res.status(404).json({ message: 'Patient not found' });
+//     }
+
+//     res.json({ message: 'Patient updated successfully' });
+//   } catch (err) {
+//     console.error('DB Error:', err);
+//     res.status(500).json({ message: 'Database error', error: err.message });
+//   }
+// });
+
+
+
+
 /**
  * @swagger
  * /patients/{id}:
  *   put:
- *     summary: Update a patient by ID
+ *     summary: Update a patient
  *     tags: [Patients]
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
  *         description: Patient ID
  *     requestBody:
  *       required: true
@@ -331,37 +353,35 @@ app.get('/patients/:id', async (req, res) => {
  *             properties:
  *               name:
  *                 type: string
- *                 example: Jane Doe
  *               contact:
  *                 type: string
- *                 example: "+9876543210"
  *     responses:
  *       200:
  *         description: Patient updated successfully
- *       400:
- *         description: Invalid input
- *       404:
- *         description: Patient not found
- *       500:
- *         description: Database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 contact:
+ *                   type: string
  */
 
-// --- Update Patient ---
 app.put('/patients/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, contact } = req.body;
+
+  if (!name && !contact) {
+    return res.status(400).json({ message: 'Nothing to update' });
+  }
+
   try {
-    const id = parseInt(req.params.id, 10);
-    const { name, contact } = req.body;
-
-    if (isNaN(id) || id <= 0) {
-      return res.status(400).json({ message: 'Invalid PatientId' });
-    }
-
-    if (!name || !contact) {
-      return res.status(400).json({ message: 'Name and contact are required' });
-    }
-
     const [result] = await pool.query(
-      'UPDATE patients SET name = ?, contact = ? WHERE id = ?',
+      'UPDATE patients SET name = COALESCE(?, name), contact = COALESCE(?, contact) WHERE id = ?',
       [name, contact, id]
     );
 
@@ -369,12 +389,16 @@ app.put('/patients/:id', async (req, res) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    res.json({ message: 'Patient updated successfully' });
+    const [rows] = await pool.query('SELECT id, name, contact FROM patients WHERE id = ?', [id]);
+    res.json(rows[0]);
   } catch (err) {
-    console.error('DB Error:', err);
+    console.error('DB error:', err);
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
+
+
+
 
 
 /**
