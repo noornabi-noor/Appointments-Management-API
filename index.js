@@ -131,9 +131,9 @@ const swaggerSpec = swaggerJSDoc({
       }
     ],
   },
-  apis: [path.join(__dirname, 'index.js')], // ✅ Absolute path
+  apis: [path.join(__dirname, 'index.js')], 
 });
-
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 /**
  * @swagger
@@ -747,15 +747,21 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', docs: '/api-docs' });
 });
 
+// if (require.main === module) {
+//   app.listen(PORT, () => {
+//     if (process.env.NODE_ENV === 'production') {
+//       console.log(`\n Server running on https://appointments-management-api.vercel.app`);
+//       console.log('Swagger:       https://appointments-management-api.vercel.app/api-docs');
+//     } else {
+//       console.log(`\n Server running on http://localhost:${PORT}`);
+//       console.log('Swagger:       http://localhost:' + PORT + '/api-docs');
+//     }
+//   });
+// }
+
 if (require.main === module) {
   app.listen(PORT, () => {
-    if (process.env.NODE_ENV === 'production') {
-      console.log(`\n Server running on https://appointments-management-api.vercel.app`);
-      console.log('Swagger:       https://appointments-management-api.vercel.app/api-docs');
-    } else {
-      console.log(`\n Server running on http://localhost:${PORT}`);
-      console.log('Swagger:       http://localhost:' + PORT + '/api-docs');
-    }
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
