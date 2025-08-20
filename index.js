@@ -14,11 +14,16 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'https://appointments-management-api.vercel.app'
-  ]
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"], 
+  credentials: true
 }));
 
 
 app.use(express.json());
+
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 const PORT = process.env.PORT || 3000;
@@ -135,7 +140,7 @@ const swaggerSpec = swaggerJSDoc({
 });
 
 // app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.get('/api-docs', (req, res) => res.redirect('/api-docs/'));
+
 
 /**
  * @swagger
@@ -750,6 +755,10 @@ app.get('/', (req, res) => {
 });
 
 
+// app.get('/api-docs', (req, res) => res.redirect('/api-docs/'));
+
+module.exports = app;
+
 if (require.main === module) {
   app.listen(PORT, () => {
     if (process.env.NODE_ENV === 'production') {
@@ -762,6 +771,3 @@ if (require.main === module) {
     
   });
 }
-
-
-module.exports = app;
