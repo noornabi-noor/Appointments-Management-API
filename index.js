@@ -118,8 +118,6 @@ async function isSlotTaken(patientId, date, time) {
 // app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
-const path = require('path');
-
 const swaggerSpec = swaggerJSDoc({
   definition: {
     openapi: '3.0.3',
@@ -759,15 +757,15 @@ app.get('/', (req, res) => {
 
 module.exports = app;
 
-if (require.main === module) {
-  app.listen(PORT, () => {
-    if (process.env.NODE_ENV === 'production') {
-      console.log(`\n Server running on https://appointments-management-api.vercel.app`);
-      console.log('Swagger:       https://appointments-management-api.vercel.app/api-docs');
-    } else {
-      console.log(`\n Server running on http://localhost:${PORT}`);
-      console.log('Swagger:       http://localhost:' + PORT + '/api-docs');
-    }
+// if (require.main === module) {
+//   app.listen(PORT, () => {
+//     if (process.env.NODE_ENV === 'production') {
+//       console.log(`\n Server running on https://appointments-management-api.vercel.app`);
+//       console.log('Swagger:       https://appointments-management-api.vercel.app/api-docs');
+//     } else {
+//       console.log(`\n Server running on http://localhost:${PORT}`);
+//       console.log('Swagger:       http://localhost:' + PORT + '/api-docs');
+//     }
     
-  });
-}
+//   });
+// }
