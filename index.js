@@ -134,7 +134,7 @@ const swaggerSpec = swaggerJSDoc({
   apis: ['./index.js'] // ✅ scans all JS files
 });
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get('/api-docs', (req, res) => res.redirect('/api-docs/'));
 
 /**
@@ -759,6 +759,7 @@ if (require.main === module) {
       console.log(`\n Server running on http://localhost:${PORT}`);
       console.log('Swagger:       http://localhost:' + PORT + '/api-docs');
     }
+    
   });
 }
 
