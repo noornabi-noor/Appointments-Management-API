@@ -1514,7 +1514,7 @@ app.get('/', async (req, res) => {
 });
 
 // ✅ Export app for Vercel serverless
-// module.exports = app;
+module.exports = app;
 
 
 if (require.main === module) {
