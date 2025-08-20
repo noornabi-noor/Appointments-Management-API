@@ -827,8 +827,7 @@ const swaggerSpec = swaggerJSDoc({
 });
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Health check
-app.get('/', (req, res) => res.json({ status: 'ok', docs: '/api-docs' }));
+
 
 // Example MySQL endpoint
 const pool = mysql.createPool({
@@ -1505,6 +1504,21 @@ app.delete('/appointments/:id', async (req, res) => {
   const [result] = await pool.query('DELETE FROM appointments WHERE id = ?', [id]);
   if (result.affectedRows === 0) return res.status(404).json({ message: 'Appointment not found' });
   res.json({ AppointmentId: id, Message: 'Appointment deleted successfully' });
+});
+
+
+// --- Example endpoint ---
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Test API status
+ *     responses:
+ *       200:
+ *         description: API is running
+ */
+app.get('/', async (req, res) => {
+  res.json({ status: 'ok', docs: '/api-docs' });
 });
 
 // ✅ Export app for Vercel serverless
