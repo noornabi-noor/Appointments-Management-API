@@ -1258,7 +1258,7 @@ app.get('/appointments', async (req, res) => {
  *                 type: string
  *                 format: date
  *                 description: Date of the appointment (YYYY-MM-DD)
- *                 example: 2025-08-20
+ *                 example: "2025-08-20"
  *               AppointmentTime:
  *                 type: string
  *                 description: Time of the appointment (HH:MM 24h format)
@@ -1283,23 +1283,15 @@ app.get('/appointments', async (req, res) => {
  *                   example: 1
  *                 AppointmentDate:
  *                   type: string
- *                   example: 2025-08-20
+ *                   example: "2025-08-20"
  *                 AppointmentTime:
  *                   type: string
  *                   example: "14:30"
  *                 Reason:
  *                   type: string
  *                   example: "Routine check-up"
- *                 Message:
- *                   type: string
- *                   example: "Appointment created successfully"
- *       400:
- *         description: Invalid input data
- *       404:
- *         description: Patient not found
- *       409:
- *         description: Time slot already booked
  */
+
 
 // --- Create Appointment ---
 app.post('/appointments', async (req, res) => {
