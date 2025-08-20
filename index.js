@@ -825,7 +825,6 @@ const swaggerSpec = swaggerJSDoc({
   },
   apis: ['./index.js']
 });
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Health check
